@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+celery
+redis
+qdrant-client
+docling
+sentence-transformers
+pandas
+openpyxl
+httpx
+torch
+pytest
+pytest-asyncio
+ragas
+pydantic-settings
+python-multipart

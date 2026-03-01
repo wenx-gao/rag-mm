@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+.env
+
+# RAG Data (DO NOT PUSH THESE)
+storage/
+qdrant_data/
+ollama_data/
+
+# OS files
+.DS_Store
+Thumbs.db
