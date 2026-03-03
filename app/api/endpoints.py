@@ -24,8 +24,8 @@ async def upload_file(file: UploadFile = File(...)):
 
 @router.post("/query", response_model=QueryResponse)
 async def query_rag(request: QueryRequest):
-    # 1. Access the global state (initialized in main.py)
-    from app.main import state
+    # 1. Access the global state (initialized in main.py) --> avoid circular import crash
+    from main import state
     
     # 2. Hybrid Search in Qdrant
     initial_chunks = await state.retriever.search(request.question, limit=request.top_k)

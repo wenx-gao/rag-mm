@@ -1,9 +1,7 @@
 # app/services/parser.py
 import logging
-from pathlib import Path
 import pandas as pd
-
-# NEW IMPORT PATHS FOR DOCLING v2.x
+from pathlib import Path
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.datamodel.base_models import InputFormat
@@ -50,26 +48,36 @@ class DocumentParser:
             "metadata": {"source": path.name, "type": "table"}
         }]
 
+
     def _parse_multimodal(self, path: Path) -> list[dict]:
         result = self.converter.convert(path)
-        doc = result.document
+        doc = result.document  # This is the whole document object
         chunks = []
         
+        # Iterate through elements (Paragraphs, Tables, Pictures)
         for element, _level in doc.iterate_items():
-            # In Docling v2, we can export elements to markdown directly
             content = ""
+            
+            # REQUIREMENT FIX: In Docling v2, export_to_markdown 
+            # often needs the 'doc' argument to work correctly.
             if hasattr(element, 'export_to_markdown'):
-                content = element.export_to_markdown()
+                try:
+                    # Pass the parent 'doc' to the exporter
+                    content = element.export_to_markdown(doc=doc)
+                except Exception:
+                    # Fallback if the specific element doesn't support the doc arg
+                    content = getattr(element, 'text', "")
             elif hasattr(element, 'text'):
                 content = element.text
 
-            if content.strip():
+            if content and content.strip():
                 chunks.append({
                     "text": content,
                     "metadata": {
                         "source": path.name,
                         "page_no": getattr(element, 'page_no', None),
-                        "type": element.__class__.__name__
+                        # Use the class name to identify if it's a TableItem, TextItem, etc.
+                        "type": element.__class__.__name__ 
                     }
                 })
         return chunks

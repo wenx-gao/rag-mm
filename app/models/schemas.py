@@ -28,7 +28,9 @@ class TaskStatus(BaseModel):
 
 class QueryRequest(BaseModel):
     """The user's question and optional parameters."""
+#    question: str = Field(..., example="What languages are listed in this document as skills?")
     question: str = Field(..., example="What was the total revenue in the Q3 excel sheet?")
+
     top_k: int = Field(default=3, description="Number of chunks to retrieve before reranking")
     rerank: bool = Field(default=True, description="Whether to apply the local BGE reranker")
 
