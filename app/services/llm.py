@@ -20,10 +20,15 @@ async def generate_answer_with_citations(question: str, best_chunks: list):
         context_str += f"--- Source [{cid}] ---\n{text_content}\n\n"
         source_map[cid] = metadata
 
+    print("--- DEBUG: CONTEXT SENT TO LLM ---")
+    print(context_str)
+    print("----------------------------------")
+
     # 2. Build the System Prompt
     system_prompt = (
         "You are a helpful assistant. Answer the question using ONLY the provided context. "
-        "Every time you state a fact, you MUST cite the source number in brackets, e.g., [1]. "
+        "Answer the question directly. Use the citation format [1] at the end of the sentence. "
+        "Do not explain where the information was found in the text; let the sources list handle that. "
         "If the answer is not in the context, say you don't know."
     )
     

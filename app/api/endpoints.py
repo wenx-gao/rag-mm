@@ -29,12 +29,13 @@ async def query_rag(request: QueryRequest):
     
     # 2. Hybrid Search in Qdrant
     initial_chunks = await state.retriever.search(request.question, limit=request.top_k)
-    
+
     if not initial_chunks:
         return {"answer": "I couldn't find any relevant information in your documents.", "sources": []}
 
-    # 3. Rerank the results
-    best_chunks = state.reranker.rerank(request.question, initial_chunks, top_n=3)
+    # 3. Pass more results to the LLM (e.g., 10)
+    best_chunks = state.reranker.rerank(request.question, initial_chunks, top_n=10)
+#    best_chunks = state.reranker.rerank(request.question, initial_chunks, top_n=3)
     
     # 4. Generate Answer with Citations using Ollama
     result = await generate_answer_with_citations(request.question, best_chunks)

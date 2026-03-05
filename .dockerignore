@@ -1,0 +1,15 @@
+# Datenbanken und KI-Modelle ignorieren
+qdrant_data/
+ollama_data/
+storage/
+
+# Node.js Abhängigkeiten (die werden im Container neu installiert)
+frontend/node_modules/
+node_modules/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Git Historie
+.git/

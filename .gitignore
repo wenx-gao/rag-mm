@@ -14,3 +14,8 @@ ollama_data/
 # OS files
 .DS_Store
 Thumbs.db
+
+# React / Node (Add this part!)
+frontend/node_modules/
+frontend/dist/
+.eslintcache

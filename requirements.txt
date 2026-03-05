@@ -14,3 +14,5 @@ pytest-asyncio
 ragas
 pydantic-settings
 python-multipart
+ragas
+langchain_community

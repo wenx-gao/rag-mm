@@ -4,6 +4,7 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 from sentence_transformers import SentenceTransformer
 from app.core.config import settings
 import uuid
+import hashlib
 
 class RAGRetriever:
     def __init__(self):
@@ -29,22 +30,76 @@ class RAGRetriever:
         except Exception as e:
             print(f"Error connecting to Qdrant: {e}")
 
-    def index_documents(self, chunks: list[dict]):
-        points = []
-        for chunk in chunks:
-            # Generate the numeric vector for the text
-            vector = self.model.encode(chunk["text"]).tolist()
+    # def index_documents(self, chunks: list[dict]):
+    #     points = []
+    #     for chunk in chunks:
+    #         # Generate the numeric vector for the text
+    #         vector = self.model.encode(chunk["text"]).tolist()
             
+    #         points.append(PointStruct(
+    #             id=str(uuid.uuid4()),
+    #             vector=vector,
+    #             payload={
+    #                 "text": chunk["text"],
+    #                 "metadata": chunk["metadata"]
+    #             }
+    #         ))
+    #     self.client.upsert(collection_name=self.collection_name, points=points)
+
+    # def index_documents(self, chunks: list[dict]):
+    #     points = []
+    #     for chunk in enumerate(chunks):
+    #         text = chunk['text']
+    #         source = chunk['metadata'].get('source', '')
+            
+    #         # CREATE A DETERMINISTIC ID
+    #         # This creates a unique string based on the text content and filename
+    #         hasher = hashlib.md5(f"{source}-{text}".encode())
+    #         deterministic_id = hasher.hexdigest()
+            
+    #         vector = self.model.encode(text).tolist()
+            
+    #         from qdrant_client.models import PointStruct
+    #         points.append(PointStruct(
+    #             id=deterministic_id, # Use the hash, NOT a random UUID
+    #             vector=vector,
+    #             payload={
+    #                 "text": text,
+    #                 "metadata": chunk["metadata"]
+    #             }
+    #         ))
+        
+    #     # Upsert means: "Update if exists, Insert if not"
+    #     self.client.upsert(collection_name=self.collection_name, points=points)
+    def index_documents(self, chunks: list[dict]):
+        # SELF-HEALING: Check if the collection exists before indexing
+        self._ensure_collection() 
+        points = []
+        # FIX: Ensure you are unpacking the tuple correctly (i, chunk)
+        for i, chunk in enumerate(chunks): 
+            text = chunk['text']  # Now 'chunk' is the dictionary, and this works!
+            source = chunk['metadata'].get('source', '')
+            
+            # Create a deterministic ID using the text and source
+            hasher = hashlib.md5(f"{source}-{text}".encode())
+            deterministic_id = hasher.hexdigest()
+            
+            # Generate the vector
+            vector = self.model.encode(text).tolist()
+            
+            from qdrant_client.models import PointStruct
             points.append(PointStruct(
-                id=str(uuid.uuid4()),
+                id=deterministic_id,
                 vector=vector,
                 payload={
-                    "text": chunk["text"],
+                    "text": text,
                     "metadata": chunk["metadata"]
                 }
             ))
         
-        self.client.upsert(collection_name=self.collection_name, points=points)
+        # Save to Qdrant
+        if points:
+            self.client.upsert(collection_name=self.collection_name, points=points)
 
     async def search(self, query: str, limit: int = 5):
         """

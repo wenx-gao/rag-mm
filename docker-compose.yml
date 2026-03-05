@@ -67,3 +67,12 @@ services:
     command: celery -A app.core.celery_app:celery_app worker --loglevel=info 
     volumes:
       - ./storage:/app/storage # Must match API storage
+
+
+  frontend:
+      build: ./frontend
+      container_name: rag-frontend
+      ports:
+        - "5173:5173"
+      depends_on:
+        - api
